@@ -11,12 +11,12 @@ import java.util.List;
 import metier.Etudiant;
 
 
-public class GestionDao {
-
+public class GestionDao
+{
 	// Informations d'accès à la base de données
-	static String url = "jdbc:mysql://localhost/gestion_ecole?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-	static String login = "root";
-	static String password = "";
+	static final String url = "jdbc:mysql://localhost/gestion_ecole?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+	static final String login = "root";
+	static final String password = "";
 	
 	static Connection connection = null;
 	static Statement statement = null;
@@ -28,52 +28,33 @@ public class GestionDao {
 	 * @param mdp Le mot de passe de l'utilisateur.
 	 * @return
 	 */
-	public static String connecter(String email , String mdp) {
-		
+	public static String seConnecter(String email , String mdp) throws SQLException, ClassNotFoundException
+	{
 		String role = "";
 		
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql = "Select * from Enseignant  WHERE mail ='" + email + "' and mdp ='" + mdp + "'";
-			
-			// Etape 4 : Exécution requête
-			rs = statement.executeQuery(sql);
-			
-			if(rs.next())
-				role = rs.getString("role");
-			else
-				System.out.println("Email ou mot de passe incorrect");
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql = "Select * FROM Enseignant WHERE mail ='" + email + "' AND mdp ='" + mdp + "'";
+		
+		// Etape 4 : Exécution requête
+		rs = statement.executeQuery(sql);
+		
+		if(rs.next())
+			role = rs.getString("role");
+		else
+			role = "incorrect";
+
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
+		
 		return role;
 	}	
 	
@@ -82,215 +63,139 @@ public class GestionDao {
 	 * @param étudiant L'objet étudiant à créer.
 	 * @return L'étudiant créé.
 	 */
-	public static Etudiant creerEtudiant(Etudiant etudiant)
+	public static Etudiant creerEtudiant(Etudiant etudiant) throws SQLException, ClassNotFoundException
 	{
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql =
-					"INSERT INTO Etudiant(nom,prenom,mail,adresse,numero,dateNaissance) " +
-					"VALUES ('" + etudiant.getNom() + "','" +
-					etudiant.getPrenom() + "','" +
-					etudiant.getMail() + "','" +
-					etudiant.getAdresse() + "','" +
-					etudiant.getTelephone() + "','" +
-					etudiant.getDateNaissanceEtudiant() + "')";
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql =
+				"INSERT INTO Etudiant(id, nom, prenom, mail, adresse, numero, dateNaissance) " +
+				"VALUES ('" + Math.random() * (100000 - 1) + "','" +
+				etudiant.getNom() + "','" +
+				etudiant.getPrenom() + "','" +
+				etudiant.getMail() + "','" +
+				etudiant.getAdresse() + "','" +
+				etudiant.getTelephone() + "','" +
+				etudiant.getDateNaissanceEtudiant() + "')";
 
-			// Etape 4 : Exécution requête
-			statement.executeUpdate(sql);
-			
-			System.out.println("L'étudiant " + etudiant.getNom() + " " + etudiant.getPrenom() + " a été créé.\n");
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		// Etape 4 : Exécution requête
+		statement.executeUpdate(sql);
+		
+		System.out.println("L'étudiant " + etudiant.getNom() + " " + etudiant.getPrenom() + " a été créé.\n");
+
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
+		
 		return new Etudiant();
 	}
 	
 	/***
-	 * Affiche les informations d'un étudiant grÃ¢ce à son email.
+	 * Affiche les informations d'un étudiant grâce à son email.
 	 * @param email Email de l'étudiant.
 	 */
-	public static void lireEtudiant(String email)
+	public static void lireEtudiant(String email) throws SQLException, ClassNotFoundException
 	{
-		try
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql ="SELECT * FROM Etudiant WHERE mail ='" + email + "'";
+		
+		// Etape 4 : Exécution requête
+		rs=statement.executeQuery(sql);
+		if(rs.next())
 		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql ="Select * FROM Etudiant WHERE mail ='"+email+"'";
-			
-			// Etape 4 : Exécution requête
-			rs=statement.executeQuery(sql);
-			if(rs.next())
-			{
-				System.out.println("Nom : "+ rs.getString("nom"));
-				System.out.println("Prenom : "+ rs.getString("prenom"));
-				System.out.println("Mail : "+ rs.getString("mail"));
-				System.out.println("Adresse : "+ rs.getString("adresse"));
-				System.out.println("Numero : "+ rs.getString("numero"));
-				System.out.println("dateNaissance : "+ rs.getString("dateNaissance"));
-			}
-			else
-				System.out.println("Aucun étudiant n'a cet email.\n");
+			System.out.println("Nom : "+ rs.getString("nom"));
+			System.out.println("Prenom : "+ rs.getString("prenom"));
+			System.out.println("Mail : "+ rs.getString("mail"));
+			System.out.println("Adresse : "+ rs.getString("adresse"));
+			System.out.println("Numero : "+ rs.getString("numero"));
+			System.out.println("dateNaissance : "+ rs.getString("dateNaissance"));
 		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		else
+			System.out.println("Aucun étudiant n'a cet email.\n");
+
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
 	}
 	
 	/**
 	 * Supprime un étudiant de la base de données.
 	 * @param email Email de l'étudiant.
 	 */
-	public static void supprimerEtudiant(String email)
+	public static void supprimerEtudiant(String email) throws SQLException, ClassNotFoundException
 	{
 		int resultat;
 		
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql = "delete from Etudiant where mail ='"+email+"'";
-			
-			// Etape 4 : Exécution requête
-			resultat= statement.executeUpdate(sql);
-			
-			if(resultat == 0)
-				System.out.println("Aucun étudiant ne possède cet email.\n");
-			else
-				System.out.println("L'étudiant a bien été supprime.\n");
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql = "DELETE FROM Etudiant WHERE mail ='"+email+"'";
+		
+		// Etape 4 : Exécution requête
+		resultat= statement.executeUpdate(sql);
+		
+		if(resultat == 0)
+			System.out.println("Aucun étudiant ne possède cet email.\n");
+		else
+			System.out.println("L'étudiant a bien été supprime.\n");
+
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
 	}
 
 	/**
-	 * Liste l'ensemble des étudiants de la base de données.
+	 * Récupère la liste de l'ensemble des étudiants de la base de données.
 	 */
-	public static void listerEtudiants()
+	public static List<String> recupererListeEtudiants() throws SQLException, ClassNotFoundException
 	{
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql ="Select * FROM Etudiant order by nom";
-			
-			// Etape 4 : Exécution requête
-			rs = statement.executeQuery(sql);
-			System.out.println("Voici l'ensemble des étudiants : \n");
-			System.out.println("Nom " + "Prenom" + " mail \n");
-			System.out.println("----------------------");
-			
+		List<String> listeEtudiants = new ArrayList<String>();
+		
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql = "SELECT id, nom, prenom, mail FROM etudiant\n";
+		
+		// Etape 4 : Exécution requête
+		rs = statement.executeQuery(sql);
+		
+		if (rs.next() == false)
+			System.out.println("Aucun étudiant trouvé.\n");
+		else
 			while(rs.next())
-				System.out.println(rs.getString("nom") + " " + rs.getString("prenom")+ " " + rs.getString("mail"));
-			
-			System.out.println("\n");
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+				listeEtudiants.add(rs.getString(1) + " | " + rs.getString(2) + " | " + rs.getString(3) + " | " + rs.getString(4));
+
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
+		
+		return listeEtudiants;
 	}
 	
 	/**
@@ -298,52 +203,32 @@ public class GestionDao {
 	 * @param email Email de l'étudiant.
 	 * @param nouvelleAdresse Nouvelle adresse de l'étudiant.
 	 */
-	public static void modifierAdresseEtudiant(String email, String nouvelleAdresse)
+	public static void modifierAdresseEtudiant(String email, String nouvelleAdresse) throws SQLException, ClassNotFoundException
 	{
 		int resultat;
-	
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql = "Update Etudiant Set adresse= '"+nouvelleAdresse+"'where mail ='"+email+"'";
-			
-			// Etape 4 : Exécution requête
-			resultat = statement.executeUpdate(sql);
-			
-			if (resultat == 0)
-				System.out.println("Aucun étudiant ne possède cet id.\n");
-			else
-				System.out.println("Nouvelle adresse mise à jour.\n");
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql = "UPDATE Etudiant SET adresse= '" + nouvelleAdresse + "'WHERE mail ='" + email + "'";
+		
+		// Etape 4 : Exécution requête
+		resultat = statement.executeUpdate(sql);
+		
+		if (resultat == 0)
+			System.out.println("Aucun étudiant ne possède cet id.\n");
+		else
+			System.out.println("Nouvelle adresse mise à jour.\n");
+
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
 	}
 	
 	/**
@@ -351,102 +236,33 @@ public class GestionDao {
 	 * @param mailEtudiant Email de l'étudiant.
 	 * @param theme Theme du cours à associer.
 	 */
-	public static void associerCoursEtudiant(String mailEtudiant, String theme)
+	public static void associerCoursEtudiant(String mailEtudiant, String theme) throws SQLException, ClassNotFoundException
 	{
 		int resultat;
-	
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql =
-					"INSERT INTO CoursEtudiant " +
-					"VALUES ('" + theme + "', '" + mailEtudiant + "')";
-			
-			// Etape 4 : Exécution requête
-			resultat = statement.executeUpdate(sql);
-			
-			if (resultat == 0)
-				System.out.println("Aucun étudiant ne possède cet id.\n");
-			else
-				System.out.println("Cours associé a l'étudiant.\n");
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
+		
+		// Etape 1 : Chargement du driver
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		// Etape 2 : Récupération de la connexion
+		connection = DriverManager.getConnection(url, login, password);
+		
+		// Etape 3 : Création d'un statement
+		statement = connection.createStatement();
+		
+		String sql =
+				"INSERT INTO CoursEtudiant " +
+				"VALUES ('" + theme + "', '" + mailEtudiant + "')";
+		
+		// Etape 4 : Exécution requête
+		resultat = statement.executeUpdate(sql);
+		
+		if (resultat == 0)
+			System.out.println("Aucun étudiant ne possède cet id.\n");
+		else
+			System.out.println("Cours associé a l'étudiant.\n");
 
-	public static List<String> rechercherEtudiant(String chaine)
-	{
-		List<String> listeEtudiants = new ArrayList<String>();
-		try
-		{
-			// Etape 1 : Chargement du driver
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			
-			// Etape 2 : Récupération de la connexion
-			connection = DriverManager.getConnection(url, login, password);
-			
-			// Etape 3 : Création d'un statement
-			statement = connection.createStatement();
-			
-			String sql = "SELECT id, nom, prenom FROM etudiant";
-			
-			// Etape 4 : Exécution requête
-			rs = statement.executeQuery(sql);
-			
-			if (rs.next() == false)
-				System.out.println("Aucun étudiant trouvé.\n");
-			else
-				while(rs.next())
-					listeEtudiants.add(rs.getString(1) + " | " + rs.getString(2) + " | " + rs.getString(3));
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				// Etape 5 : Libérer ressources de la mémoire
-				connection.close();
-				statement.close();
-			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		return listeEtudiants;
+		// Etape 5 : Libérer ressources de la mémoire
+		connection.close();
+		statement.close();
 	}
 }
